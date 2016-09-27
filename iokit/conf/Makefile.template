@@ -1,0 +1,108 @@
+#
+# Mach Operating System
+# Copyright (c) 1986 Carnegie-Mellon University
+# All rights reserved.  The CMU software License Agreement specifies
+# the terms and conditions for use and redistribution.
+#
+
+#
+# Export IDENT for sub-makefiles
+#
+export IDENT
+
+#
+# XXX: INCFLAGS 
+#
+INCFLAGS_MAKEFILE=  $(INCFLAGS_POSIX) -I$(SOURCE) -I$(SOURCE)include
+
+export MakeInc_cmd=${SRCROOT}/makedefs/MakeInc.cmd
+export MakeInc_def=${SRCROOT}/makedefs/MakeInc.def
+export MakeInc_rule=${SRCROOT}/makedefs/MakeInc.rule
+export MakeInc_dir=${SRCROOT}/makedefs/MakeInc.dir
+
+include $(MakeInc_cmd)
+include $(MakeInc_def)
+
+#
+# XXX: CFLAGS   ARM_TODO: added __MBUF_TRANSITION_ for IONetworkingFamily
+#
+CFLAGS+= -imacros meta_features.h -DKERNEL -DDRIVER_PRIVATE				\
+	-Wall -Wno-four-char-constants -fno-common		\
+	-DIOMATCHDEBUG=1 -DIOALLOCDEBUG=1			\
+	-D__MBUF_TRANSITION_					\
+	-imacros meta_features.h $(CFLAGS_INLINE_CONFIG)
+#-DIOKITDEBUG=-1
+
+CWARNFLAGS   += -Wno-unused-parameter -Wno-redundant-decls -Wno-nested-externs -Wno-write-strings
+MWARNFLAGS   += -Wno-unused-parameter -Wno-redundant-decls -Wno-nested-externs -Wno-write-strings
+CXXWARNFLAGS += -Wno-unused-parameter -Wno-redundant-decls -Wno-write-strings -Wno-cast-qual -Wno-shadow
+
+CFLAGS_RELEASE += -DIOASSERT=0
+CFLAGS_DEBUG += -DIOASSERT=1
+
+SFLAGS+= -DKERNEL
+
+#
+# Directories for mig generated files
+#
+COMP_SUBDIRS = 
+
+#
+#  Make sure we don't remove this by accident if interrupted at the wrong
+#  time.
+#
+.PRECIOUS: Makefile
+
+#
+#  Theses macros are filled in by the config program depending on the
+#  current configuration.  The MACHDEP macro is replaced by the
+#  contents of the machine dependent makefile template and the others
+#  are replaced by the corresponding symbol definitions for the
+#  configuration.
+#
+
+%OBJS
+
+%CFILES
+
+%MFILES
+
+%SFILES
+
+%BFILES
+
+%ORDERED
+%MACHDEP
+
+#
+#  OBJSDEPS is the set of files (defined in the machine dependent
+#  template if necessary) which all objects depend on (such as an
+#  in-line assembler expansion filter)
+#
+${OBJS}: ${OBJSDEPS}
+
+
+%LOAD
+
+LDOBJS = $(OBJS)
+
+$(COMPONENT).o: $(LDOBJS)
+	@echo LD $(COMPONENT)
+	$(_v)$(SEG_HACK) __HIB IOHibernateRestoreKernel.o -o _IOHibernateRestoreKernel.o
+	$(_v)mv _IOHibernateRestoreKernel.o IOHibernateRestoreKernel.o
+	$(_v)$(SEG_HACK) __HIB WKdmDecompress.o -o _WKdmDecompress.o
+	$(_v)mv _WKdmDecompress.o WKdmDecompress.o
+	$(_v)$(LD)  $(LDFLAGS_COMPONENT) -o $(COMPONENT).o ${LDOBJS} 
+
+do_depend: do_all
+	$(_v)${MD} -u Makedep -f -d `ls *.d`
+	
+	
+do_all: $(COMPONENT).o
+
+do_build_all: do_depend
+
+%RULES
+
+include $(MakeInc_rule)
+include $(MakeInc_dir)

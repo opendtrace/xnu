@@ -1,0 +1,47 @@
+# options
+
+OPTIONS/libkerncpp					optional libkerncpp
+OPTIONS/kdebug						optional kdebug
+OPTIONS/gprof						optional gprof
+OPTIONS/config_dtrace				optional config_dtrace
+OPTIONS/networking					optional networking
+OPTIONS/crypto						optional crypto
+OPTIONS/zlib						optional zlib
+
+# libkern
+
+libkern/gen/OSAtomicOperations.c			standard
+libkern/gen/OSDebug.cpp					standard
+
+libkern/c++/OSMetaClass.cpp				optional libkerncpp
+libkern/c++/OSObject.cpp				optional libkerncpp
+
+libkern/c++/OSArray.cpp					optional libkerncpp
+libkern/c++/OSBoolean.cpp				optional libkerncpp
+libkern/c++/OSCollection.cpp				optional libkerncpp
+libkern/c++/OSCollectionIterator.cpp			optional libkerncpp
+libkern/c++/OSData.cpp					optional libkerncpp
+libkern/c++/OSDictionary.cpp				optional libkerncpp
+libkern/c++/OSIterator.cpp				optional libkerncpp
+libkern/c++/OSNumber.cpp				optional libkerncpp
+libkern/c++/OSOrderedSet.cpp				optional libkerncpp
+libkern/c++/OSRuntime.cpp				optional libkerncpp
+libkern/c++/OSRuntimeSupport.c				optional libkerncpp
+libkern/c++/OSSerialize.cpp				optional libkerncpp
+libkern/c++/OSSet.cpp					optional libkerncpp
+libkern/c++/OSString.cpp				optional libkerncpp
+libkern/c++/OSSymbol.cpp				optional libkerncpp
+libkern/c++/OSUnserialize.cpp				optional libkerncpp
+libkern/c++/OSUnserializeXML.cpp			optional libkerncpp
+
+libkern/stdio/scanf.c					standard
+
+libkern/uuid/uuid.c					standard
+
+libkern/zlib.c					optional zlib networking
+libkern/zlib.c					optional ipsec
+
+libkern/crypto/md5.c				optional crypto
+libkern/crypto/md5.c				optional networking
+libkern/crypto/sha1.c				optional crypto
+libkern/crypto/sha1.c				optional ipsec
