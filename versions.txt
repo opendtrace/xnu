@@ -1,3 +1,12 @@
+Description of versions of the xnu kernel for Mac OS X
+
+This file is update once per kernel import.
+
+The kernel version is encapsulated in config/MasterVersion.  The
+version in MasterVersion has a major number that is 4 more than the
+release, i.e. Mac OS X 10.6.2 is 10.2.0 in the relevant MasterVersion
+file.
+
 9.0.0
 9.1.0
 9.2.0
