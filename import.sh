@@ -17,7 +17,7 @@ rm -rf *
 
 git checkout -- versions.txt
 
-tar --strip-components 1 -xf ../../tarballs/opensource.apple.com/tarballs/xnu/${tarball}.tar.gz
+tar --strip-components 1 -xf ../${tarball}.tar.gz
 
 # Master Version is the kernel's idea of a revision, and is off by 4
 # from the Mac OS X version (i.e. 10.5.0 -> 9.0.0)
