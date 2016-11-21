@@ -7,6 +7,8 @@ If you are looking for the instructions on how to build Darwin please
 see the text README file in the top level directory.  New imports are
 created with the import.sh script, also in the tope level directory.
 
+If you're looking for Apple's README.md file that is now in README-APPLE.md
+
 # Generating a diff #
 
 Each commit is tagged with three values, the OSX version (10.5.0,
