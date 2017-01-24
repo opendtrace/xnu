@@ -3,6 +3,10 @@ BUILD/
 build/
 .DS_Store
 
+# vim turds
+*~
+*.swp
+
 # /
 /.remotebuild_credential
 /cscope.*
