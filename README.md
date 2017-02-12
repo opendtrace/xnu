@@ -33,7 +33,13 @@ a Mac OS VM.  These instructions are current as of VMware Fusion
 
 	1. Select File->New
 	2. Choose "Install OS X from the recovery partition"
-	3. Install Xcode into the newly created VM.
+	3. Before installing use the utilities to start a terminal
+	4. Turn OFF system integrity protection
+	4a. $ csrutil disable
+	4b. $ csrutil status
+	      System Integrity Protection status: disabled
+	5. Install Mac OS
+	6. Install Xcode into the newly created VM.
 
 Follow the rest of the instructions below.
 
@@ -41,7 +47,7 @@ How to build XNU
 ================
 
 Install the firehose library
--------------------------------------------------------
+----------------------------
 
 From Mac OS 10.12 onwards you must install the `firehose` library to
 before you attempt to build an xnu kernel.
@@ -51,6 +57,113 @@ Clone the following [repo](https://github.com/Proteas/install_firehose_lib)
 and then run the installer script:
 
 `./install-firehose.sh`
+
+Simple Instructions from Shantonu
+---------------------------------
+
+The following insturctions are included from this blog post
+on [building 10.11](http://shantonu.blogspot.com) and along with the
+above instruction on installing firehose will give you a proper build
+of xnu.  The instructions have been changed to point to repositories
+that are present in OpenDTrace including macos-dtrace and xnu. The
+full build instructions are included in the sections following this
+one.
+
+Install OS X and Xcode from the Mac App Store, make sure the Xcode
+license has been agreed-to with `sudo xcodebuild -license` Download
+the source for the dtrace and AvailabilityVersions projects, which are
+required dependencies, as well as xnu itself
+
+1. Build and install CTF tools from dtrace
+```
+$ cd macos-dtrace
+$ mkdir -p obj sym dst
+$ xcodebuild install -target ctfconvert -target ctfdump -target ctfmerge ARCHS="x86_64" SRCROOT=$PWD OBJROOT=$PWD/obj SYMROOT=$PWD/sym DSTROOT=$PWD/dst
+...
+$ sudo ditto $PWD/dst/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain
+Password:
+$ cd ..
+```
+
+2. Install AvailabilityVersions
+```
+$ tar zxf AvailabilityVersions-20.tar.gz 
+$ cd AvailabilityVersions-20
+$ mkdir -p dst
+$ make install SRCROOT=$PWD DSTROOT=$PWD/dst
+$ sudo ditto $PWD/dst/usr/local `xcrun -sdk macosx -show-sdk-path`/usr/local
+$ cd ..
+```
+
+3. Build xnu
+```
+$ tar zxf xnu-3247.1.106.tar.gz
+$ cd xnu-3247.1.106
+$ make SDKROOT=macosx ARCH_CONFIGS=X86_64 KERNEL_CONFIGS=RELEASE
+See xnu's top-level README for additional build variables that can be passed on the command-line, such as BUILD_LTO=0 or KERNEL_CONFIGS=DEVELOPMENT .
+```
+
+You can now install xnu or continue with these insructions of you are
+addding system calls
+
+NOTE: If you are attempting to add system calls, you may also need to
+build Libsyscall.
+
+4. Download the Libsystem source
+```
+$ curl -O https://opensource.apple.com/tarballs/Libsystem/Libsystem-1225.1.1.tar.gz
+```
+5. Install Libsystem headers
+```
+$ tar zxf Libsystem-1225.1.1.tar.gz
+$ cd Libsystem-1225.1.1
+$ xcodebuild installhdrs -sdk macosx ARCHS='x86_64 i386' SRCROOT=$PWD OBJROOT=$PWD/obj SYMROOT=$PWD/sym DSTROOT=$PWD/dst
+$ sudo ditto $PWD/dst `xcrun -sdk macosx -show-sdk-path`
+$ cd ..
+```
+
+6. Install xnu and Libsyscall headers
+```
+$ cd xnu-3247.1.106
+$ mkdir -p BUILD.hdrs/obj BUILD.hdrs/sym BUILD.hdrs/dst
+$ make installhdrs SDKROOT=macosx ARCH_CONFIGS=X86_64 SRCROOT=$PWD OBJROOT=$PWD/BUILD.hdrs/obj SYMROOT=$PWD/BUILD.hdrs/sym DSTROOT=$PWD/BUILD.hdrs/dst
+$ sudo xcodebuild installhdrs -project libsyscall/Libsyscall.xcodeproj -sdk macosx ARCHS='x86_64 i386' SRCROOT=$PWD/libsyscall OBJROOT=$PWD/BUILD.hdrs/obj SYMROOT=$PWD/BUILD.hdrs/sym DSTROOT=$PWD/BUILD.hdrs/dst
+$ sudo ditto BUILD.hdrs/dst `xcrun -sdk macosx -show-sdk-path`
+```
+
+7. Build Libsyscall
+```
+$ mkdir -p BUILD.libsyscall/obj BUILD.libsyscall/sym BUILD.libsyscall/dst
+$ sudo xcodebuild install -project libsyscall/Libsyscall.xcodeproj -sdk macosx ARCHS='x86_64 i386' SRCROOT=$PWD/libsyscall OBJROOT=$PWD/BUILD.libsyscall/obj SYMROOT=$PWD/BUILD.libsyscall/sym DSTROOT=$PWD/BUILD.libsyscall/dst
+```
+
+To install custom OS components, System Integrity Protection must be
+disabled.  If you are installing in a VM you should have followed the
+directions above, if you are using actual hardware you will need to
+boot into the recovery partition and follow the same directions as in
+step 4 of the VM discussion.
+
+8. To install the resulting new binaries, execute:
+
+xnu:
+```
+$ sudo cp BUILD/obj/RELEASE_X86_64/kernel /System/Library/Kernels/
+$ sudo kextcache -invalidate /
+/ locked; waiting for lock.
+Lock acquired; proceeding.
+...
+$ sudo reboot
+```
+
+9. If you are adding system calls the install libsyscall as well.
+
+Libsyscall:
+```
+$ sudo cp BUILD.libsyscall/dst/usr/lib/system/libsystem_kernel.dylib /usr/lib/system/
+$ sudo update_dyld_shared_cache
+...
+$ sudo reboot
+```
 
 Building `DEVELOPMENT` kernel
 -----------------------------
