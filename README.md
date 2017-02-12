@@ -22,8 +22,35 @@ XNU Source Tree
   * `bsd` - BSD subsystems code
   * `tools` - A set of utilities for testing, debugging and profiling kernel.
 
+Developing XNU on VMware Fusion on Mac OS
+==================================
+
+The xnu kernel can be built and run on VMware Fusion on Mac OS.  In
+order to develop xnu in this way you will first need to set up a Mac
+OS Virtual Machine.  You will need at least 40G of disk space free for
+a Mac OS VM.  These instructions are current as of VMware Fusion
+8.5.3.
+
+	1. Select File->New
+	2. Choose "Install OS X from the recovery partition"
+	3. Install Xcode into the newly created VM.
+
+Follow the rest of the instructions below.
+
 How to build XNU
 ================
+
+Install the firehose library
+-------------------------------------------------------
+
+From Mac OS 10.12 onwards you must install the `firehose` library to
+before you attempt to build an xnu kernel.
+
+Clone the following [repo](https://github.com/Proteas/install_firehose_lib)
+
+and then run the installer script:
+
+`./install-firehose.sh`
 
 Building `DEVELOPMENT` kernel
 -----------------------------
